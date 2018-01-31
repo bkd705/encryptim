@@ -1,0 +1,22 @@
+{
+  "name": "encryptim",
+  "version": "1.0.0",
+  "main": "http/index.ts",
+  "license": "MIT",
+  "scripts": {
+    "start": "tsc -p ./http -w & nodemon ./http/dist/index.js --watch"
+  },
+  "devDependencies": {
+    "@types/koa": "^2.0.43",
+    "@types/koa-bodyparser": "^4.2.0",
+    "@types/koa-router": "^7.0.27",
+    "nodemon": "^1.14.11",
+    "ts-loader": "^3.3.1",
+    "typescript": "^2.6.2"
+  },
+  "dependencies": {
+    "koa": "^2.4.1",
+    "koa-bodyparser": "^4.2.0",
+    "koa-router": "^7.3.0"
+  }
+}
