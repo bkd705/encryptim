@@ -15,6 +15,14 @@ export class UserController {
     const userId: number = parseInt(ctx.params.id)
     const user: User = this.users.find(user => user.id === userId)
 
+    if (!user) {
+      ctx.status = 404
+
+      return (ctx.body = {
+        error: 'User does not exist',
+      })
+    }
+
     ctx.body = {
       user,
     }
@@ -22,6 +30,16 @@ export class UserController {
 
   create = async (ctx: IRouterContext) => {
     const user: User = ctx.request.body
+    const existing = this.users.some(u => u.email === user.email)
+
+    if (existing) {
+      ctx.status = 422
+
+      return (ctx.body = {
+        error: 'User email already exists',
+      })
+    }
+
     user.id = this.users.length + 1
 
     this.users = [...this.users, user]
@@ -37,8 +55,13 @@ export class UserController {
     const userIndex: number = this.users.findIndex(user => user.id === userId)
     const user: User = this.users[userIndex]
 
-    if (userIndex < 0) return (ctx.status = 404)
+    if (userIndex < 0) {
+      ctx.status = 404
 
+      return (ctx.body = {
+        error: 'User does not exist',
+      })
+    }
     const updatedUser: User = {
       ...user,
       ...changes,
@@ -58,6 +81,14 @@ export class UserController {
   delete = async (ctx: IRouterContext) => {
     const userId: number = parseInt(ctx.params.id)
     const userIndex: number = this.users.findIndex(user => user.id === userId)
+
+    if (userIndex < 0) {
+      ctx.status = 404
+
+      return (ctx.body = {
+        error: 'User does not exist',
+      })
+    }
 
     this.users = [
       ...this.users.slice(0, userIndex),
