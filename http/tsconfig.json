@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
     "module": "commonjs",
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "./dist/",
     "noImplicitAny": true,
-    "lib": ["es5", "es6", "esnext.asynciterable"],
+    "lib": ["es6", "esnext.asynciterable"],
     "typeRoots": ["../node_modules/@types"],
   }
 }

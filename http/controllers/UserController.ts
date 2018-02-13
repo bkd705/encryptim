@@ -1,4 +1,5 @@
 import { IRouterContext } from 'koa-router'
+import * as bcrypt from 'bcrypt'
 
 export class UserController {
   users: User[] = []
@@ -17,50 +18,71 @@ export class UserController {
 
     if (!user) {
       ctx.status = 404
-
-      return (ctx.body = {
+      ctx.body = {
         error: 'User does not exist',
-      })
+      }
+
+      return
     }
 
     ctx.body = {
-      user,
+      user: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        email: user.email,
+      },
     }
   }
 
   create = async (ctx: IRouterContext) => {
     const user: User = ctx.request.body
-    const existing = this.users.some(u => u.email === user.email)
+    const emailExists: boolean = this.users.some(u => u.email === user.email)
+    const usernameExists: boolean = this.users.some(
+      u => u.username === user.username
+    )
+    const saltRounds: number = 10
 
-    if (existing) {
+    const hash = await bcrypt.hash(user.password, saltRounds)
+
+    if (emailExists || usernameExists) {
       ctx.status = 422
+      ctx.body = {
+        error: emailExists
+          ? 'User email already exists'
+          : 'Username already exists',
+      }
 
-      return (ctx.body = {
-        error: 'User email already exists',
-      })
+      return
     }
 
     user.id = this.users.length + 1
-
+    user.password = hash
     this.users = [...this.users, user]
 
     ctx.body = {
-      user,
+      user: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        email: user.email,
+      },
     }
   }
 
   update = async (ctx: IRouterContext) => {
     const userId: number = parseInt(ctx.params.id)
-    const changes = ctx.request.body
+    const changes: any = ctx.request.body
     const userIndex: number = this.users.findIndex(user => user.id === userId)
     const user: User = this.users[userIndex]
 
     if (userIndex < 0) {
       ctx.status = 404
-
-      return (ctx.body = {
+      ctx.body = {
         error: 'User does not exist',
-      })
+      }
+
+      return
     }
     const updatedUser: User = {
       ...user,
@@ -74,7 +96,12 @@ export class UserController {
     ]
 
     ctx.body = {
-      user: updatedUser,
+      user: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        email: user.email,
+      },
     }
   }
 
@@ -84,10 +111,11 @@ export class UserController {
 
     if (userIndex < 0) {
       ctx.status = 404
-
-      return (ctx.body = {
+      ctx.body = {
         error: 'User does not exist',
-      })
+      }
+
+      return
     }
 
     this.users = [
@@ -96,5 +124,33 @@ export class UserController {
     ]
 
     ctx.status = 201
+  }
+
+  login = async (ctx: IRouterContext) => {
+    const reqUser: any = ctx.request.body
+    const user: User = this.users.find(user => user.email === reqUser.email)
+    const passwordVerified: boolean = await bcrypt.compareSync(
+      reqUser.password,
+      user.password
+    )
+
+    if (!(user && passwordVerified)) {
+      ctx.status = 401
+      ctx.body = {
+        error: 'Invalid credentials',
+      }
+
+      return
+    }
+
+    ctx.status = 200
+    ctx.body = {
+      user: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        email: user.email,
+      },
+    }
   }
 }

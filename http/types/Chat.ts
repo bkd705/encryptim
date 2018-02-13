@@ -1,4 +1,4 @@
 type Chat = {
   id: number
-  name: String
+  name: string
 }
