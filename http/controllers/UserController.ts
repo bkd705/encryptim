@@ -41,9 +41,6 @@ export class UserController {
     const usernameExists: boolean = this.users.some(
       u => u.username === user.username
     )
-    const saltRounds: number = 10
-
-    const hash = await bcrypt.hash(user.password, saltRounds)
 
     if (emailExists || usernameExists) {
       ctx.status = 422
@@ -57,7 +54,15 @@ export class UserController {
     }
 
     user.id = this.users.length + 1
-    user.password = hash
+
+    try {
+      user.password = await bcrypt.hash(user.password, 10)
+    } catch (e) {
+      ctx.status = 500
+
+      return
+    }
+
     this.users = [...this.users, user]
 
     ctx.body = {
@@ -129,12 +134,11 @@ export class UserController {
   login = async (ctx: IRouterContext) => {
     const reqUser: any = ctx.request.body
     const user: User = this.users.find(user => user.email === reqUser.email)
-    const passwordVerified: boolean = await bcrypt.compareSync(
-      reqUser.password,
-      user.password
-    )
 
-    if (!(user && passwordVerified)) {
+    const isAuthenticated =
+      user && (await bcrypt.compare(reqUser.password, user.password))
+
+    if (!isAuthenticated) {
       ctx.status = 401
       ctx.body = {
         error: 'Invalid credentials',
