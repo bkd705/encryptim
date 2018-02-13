@@ -55,10 +55,10 @@ export class MessageController {
       })
     }
 
-    this.messages = {
+    this.messages = [
       ...this.messages.slice(0, messageIndex),
       ...this.messages.slice(messageIndex + 1),
-    }
+    ]
 
     ctx.status = 201
   }
