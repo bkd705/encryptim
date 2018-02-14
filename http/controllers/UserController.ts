@@ -1,5 +1,6 @@
 import { IRouterContext } from 'koa-router'
 import * as bcrypt from 'bcrypt'
+import * as jwt from 'jsonwebtoken'
 
 export class UserController {
   users: User[] = []
@@ -89,6 +90,15 @@ export class UserController {
 
       return
     }
+
+    try {
+      changes.password = await bcrypt.hash(changes.password, 10)
+    } catch (e) {
+      ctx.status = 500
+
+      return
+    }
+
     const updatedUser: User = {
       ...user,
       ...changes,
@@ -102,10 +112,10 @@ export class UserController {
 
     ctx.body = {
       user: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        username: user.username,
-        email: user.email,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        username: updatedUser.username,
+        email: updatedUser.email,
       },
     }
   }
@@ -147,14 +157,16 @@ export class UserController {
       return
     }
 
+    const payload = {
+      authenticated: isAuthenticated,
+    }
+
+    const token = jwt.sign({ id: user.id }, 'testSecret', { expiresIn: '10m' })
+
     ctx.status = 200
     ctx.body = {
-      user: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        username: user.username,
-        email: user.email,
-      },
+      message: 'User authenticated',
+      token: token,
     }
   }
 }
