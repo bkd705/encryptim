@@ -157,10 +157,6 @@ export class UserController {
       return
     }
 
-    const payload = {
-      authenticated: isAuthenticated,
-    }
-
     const token = jwt.sign({ id: user.id }, 'testSecret', { expiresIn: '10m' })
 
     ctx.status = 200
