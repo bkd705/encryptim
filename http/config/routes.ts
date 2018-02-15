@@ -1,4 +1,5 @@
 import * as Router from 'koa-router'
+
 import { UserController } from '../controllers/UserController'
 import { MessageController } from '../controllers/MessageController'
 import { ChatController } from '../controllers/ChatController'
@@ -14,6 +15,7 @@ export const createRoutes = (router: Router) => {
   router.post('/api/user', User.create)
   router.put('/api/user/:id', User.update)
   router.delete('/api/user:id', User.delete)
+  router.post('/api/login', User.login)
 
   //Messages
   router.get('/api/message', Message.index)
